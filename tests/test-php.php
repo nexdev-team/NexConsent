@@ -105,6 +105,21 @@ check('manual re-detect does not change colours', cpc_detected_options($f)['them
 $f['apply_colour'] = true;
 check('fresh install uses theme colour', cpc_detected_options($f)['theme'] === 'custom' && cpc_detected_options($f)['accent'] === '#29a643');
 
+// Legacy colour migration
+@mkdir('/tmp/wp-plugins/cpapstore-consent/assets', 0777, true);
+if (!defined('WP_PLUGIN_DIR')) define('WP_PLUGIN_DIR', '/tmp/wp-plugins');
+file_put_contents('/tmp/wp-plugins/cpapstore-consent/assets/consent.css', '.cpc-actions button{background:#196c3b}');
+$GLOBALS['opts']['cpc_options'] = ['gtm_id' => 'GTM-ABC1234', 'language' => 'bg'];
+cpc_migrate_legacy_colours();
+check('legacy green site stays green', $GLOBALS['opts']['cpc_options']['theme'] === 'green' && $GLOBALS['opts']['cpc_options']['gtm_id'] === 'GTM-ABC1234');
+$GLOBALS['opts']['cpc_options'] = ['theme' => 'custom', 'accent' => '#7b1fa2'];
+cpc_migrate_legacy_colours();
+check('existing colour choice untouched', $GLOBALS['opts']['cpc_options']['theme'] === 'custom');
+unlink('/tmp/wp-plugins/cpapstore-consent/assets/consent.css');
+$GLOBALS['opts']['cpc_options'] = ['gtm_id' => 'GTM-ABC1234'];
+cpc_migrate_legacy_colours();
+check('legacy site without old files -> blue', $GLOBALS['opts']['cpc_options']['theme'] === 'blue');
+
 // Updater (GitHub releases)
 $GLOBALS['remote'] = function ($url) {
   return ['response' => ['code' => 200], 'body' => json_encode(['tag_name' => 'v1.3.5', 'draft' => false, 'prerelease' => false, 'html_url' => 'https://github.com/nexdev-team/NexConsent/releases/tag/v1.3.5', 'body' => 'notes',

@@ -78,6 +78,20 @@ function cpc_palette() {
         'reopen-shadow' => $tint(0.55, 0.15) . '15', 'overlay' => $tint(0.60, 0.12) . 'b3', 'close-bg' => $tint(0.30, 0.95),
         'cat-border' => $tint(0.25, 0.91), 'muted' => $tint(0.12, 0.40), 'locked-bg' => $tint(0.55, 0.94)];
 }
+// Sites coming from CPAPstore Consent have no colour setting yet: keep the colours their old
+// stylesheet had (green or blue) instead of switching everyone to blue. Runs once per site.
+function cpc_migrate_legacy_colours() {
+    $saved = get_option('cpc_options', null);
+    if (!is_array($saved) || isset($saved['theme'])) return;
+    $theme = 'blue';
+    $css = WP_PLUGIN_DIR . '/cpapstore-consent/assets/consent.css';
+    if (is_readable($css) && strpos((string) file_get_contents($css), '#196c3b') !== false) $theme = 'green';
+    $saved['theme'] = $theme;
+    $saved['accent'] = $theme === 'green' ? '#196c3b' : '#1e73be';
+    update_option('cpc_options', $saved);
+}
+add_action('init', 'cpc_migrate_legacy_colours', 1);
+
 function cpc_palette_css() {
     $vars = '';
     foreach (cpc_palette() as $k => $v) if (preg_match('/^#[0-9a-f]{3,8}$/i', $v)) $vars .= '--cpc-' . $k . ':' . $v . ';';

@@ -3,7 +3,7 @@
  * Plugin Name: NexConsent
  * Plugin URI: https://github.com/nexdev-team/NexConsent
  * Description: Lightweight, first-party cookie consent for WordPress and WooCommerce with Google Consent Mode v2, WP Consent API bridge and Bulgarian, Greek and English copy. By NexDev.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: NexDev
  * Author URI: https://nexdev.gr
  * Requires at least: 6.2
@@ -26,7 +26,7 @@ if (defined('CPC_VERSION')) {
     });
     return;
 }
-const CPC_VERSION = '1.3.0';
+const CPC_VERSION = '1.3.1';
 const NEXCONSENT_FILE = __FILE__;
 // Everything else lives in includes/ so nothing is declared while the old plugin is still loaded.
 require_once __DIR__ . '/includes/plugin.php';

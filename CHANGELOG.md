@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.1
+- Sites moving from CPAPstore Consent keep their banner colours (green or blue) instead of switching to blue.
+
 ## 1.3.0
 - Renamed from CPAPstore Consent to **NexConsent** (by NexDev). Settings and visitors' existing choices carry over; the old plugin is switched off automatically when NexConsent is activated.
 - Updates straight from GitHub releases (Dashboard → Updates), plus a "Check for updates" link on the Plugins screen.
