@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+- Withdrawing consent now also removes Google Ads / Analytics cookies set by other plugins (e.g. Google for WooCommerce), not only by the site's own GTM container.
+- The cookie table names Google for WooCommerce when it is the Google Ads source.
+
 ## 1.3.2
 - Optional “Reject optional” button on the first banner screen (Settings → NexConsent → Reject button). On by default for new installs; existing sites keep their current banner until it is switched on.
 

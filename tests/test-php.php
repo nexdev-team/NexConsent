@@ -120,6 +120,12 @@ $GLOBALS['opts']['cpc_options'] = ['gtm_id' => 'GTM-ABC1234'];
 cpc_migrate_legacy_colours();
 check('legacy site without old files -> blue', $GLOBALS['opts']['cpc_options']['theme'] === 'blue');
 
+// External services: Google cookies are cleaned on withdrawal
+$GLOBALS['opts']['cpc_options'] = ['external_marketing' => 1, 'external_analytics' => 1];
+$pat = cpc_config()['patterns'];
+check('external marketing cleans _gcl_*', in_array('_gcl_*', $pat['marketing'], true) && in_array('sbjs_*', $pat['marketing'], true), json_encode($pat));
+check('external analytics cleans _ga', in_array('_ga', $pat['analytics'], true));
+
 // Updater (GitHub releases)
 $GLOBALS['remote'] = function ($url) {
   return ['response' => ['code' => 200], 'body' => json_encode(['tag_name' => 'v1.3.5', 'draft' => false, 'prerelease' => false, 'html_url' => 'https://github.com/nexdev-team/NexConsent/releases/tag/v1.3.5', 'body' => 'notes',

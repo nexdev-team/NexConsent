@@ -206,11 +206,14 @@ function cpc_services() {
     ];
     if (($gtm && $o['gtm_analytics']) || $ga || $o['external_analytics']) $services[] = [
         'id' => 'analytics', 'category' => 'analytics', 'provider' => (($gtm && $o['gtm_analytics']) || $ga) ? 'Google Analytics / GTM' : 'Registered analytics services',
-        'cookies' => (($gtm && $o['gtm_analytics']) || $ga) ? ['_ga', '_ga_*', '_gid', '_gat*'] : [], 'purpose' => $t['analytics_desc'], 'duration' => $t['service_duration'],
+        // Google's own cookies are listed for other analytics services too, so they are removed on withdrawal.
+        'cookies' => ['_ga', '_ga_*', '_gid', '_gat*'], 'purpose' => $t['analytics_desc'], 'duration' => $t['service_duration'],
     ];
     if (($gtm && $o['gtm_marketing']) || $o['external_marketing']) $services[] = [
-        'id' => 'marketing', 'category' => 'marketing', 'provider' => ($gtm && $o['gtm_marketing']) ? 'Google Ads / GTM' : 'Registered marketing services',
-        'cookies' => ($gtm && $o['gtm_marketing']) ? ['_gcl_*', '_gac_*'] : [], 'purpose' => $t['marketing_desc'], 'duration' => $t['service_duration'],
+        'id' => 'marketing', 'category' => 'marketing',
+        'provider' => ($gtm && $o['gtm_marketing']) ? 'Google Ads / GTM' : (in_array('google-listings-and-ads/google-listings-and-ads.php', (array) get_option('active_plugins', []), true) ? 'Google Ads (Google for WooCommerce)' : 'Registered marketing services'),
+        // Google Ads cookies are listed for other marketing services too (e.g. Google for WooCommerce), so they are removed on withdrawal.
+        'cookies' => ['_gcl_*', '_gac_*'], 'purpose' => $t['marketing_desc'], 'duration' => $t['service_duration'],
     ];
     if ($o['mailerlite']) $services[] = [
         'id' => 'mailerlite', 'category' => 'marketing', 'provider' => 'MailerLite',
