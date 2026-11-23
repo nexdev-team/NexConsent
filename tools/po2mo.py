@@ -47,7 +47,9 @@ def write_mo(entries, path):
         voffsets += [len(s), vpos]
         kpos += len(i) + 1
         vpos += len(s) + 1
-    out = struct.pack('<7I', 0x950412de, 0, n, 28, 28 + 8 * n, 0, 0)
+    # No hash table (size 0), but its offset must point right after the index tables:
+    # WordPress's MO reader rejects the file otherwise.
+    out = struct.pack('<7I', 0x950412de, 0, n, 28, 28 + 8 * n, 0, 28 + 16 * n)
     out += struct.pack('<%dI' % (2 * n), *koffsets) + struct.pack('<%dI' % (2 * n), *voffsets)
     out += b''.join(i + b'\0' for i in ids) + b''.join(s + b'\0' for s in strs)
     with open(path, 'wb') as fh:

@@ -41,6 +41,8 @@ class MO {
     private $e = [];
     function import_from_file($f) {
         $b = file_get_contents($f); $h = unpack('V7', substr($b, 0, 28)); $n = $h[3];
+        // Same checks as WordPress's own MO reader (wp-includes/pomo/mo.php).
+        if ($h[1] !== 0x950412de || $h[2] !== 0 || $h[5] - $h[4] !== 8 * $n || $h[7] - $h[5] !== 8 * $n) return false;
         for ($i = 0; $i < $n; $i++) {
             $k = unpack('V2', substr($b, $h[4] + 8 * $i, 8)); $v = unpack('V2', substr($b, $h[5] + 8 * $i, 8));
             $this->e[substr($b, $k[2], $k[1])] = substr($b, $v[2], $v[1]);

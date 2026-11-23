@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1
+- Fix: a fixed banner language (e.g. Bulgarian) showed English. The bundled `.mo` files had a header WordPress's MO reader rejects; the automatic language was not affected.
+
 ## 2.0.0
 Rewritten as a general-purpose plugin that any WordPress site can use.
 
