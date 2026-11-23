@@ -1,0 +1,66 @@
+[
+ {
+  "locale": "el",
+  "opts": {
+   "cpc_options": {
+    "gtm_id": "GTM-NTPKG5T",
+    "gtm_analytics": 1,
+    "gtm_marketing": 1,
+    "theme": "blue"
+   },
+   "woocommerce_feature_order_attribution_enabled": "yes"
+  },
+  "version": "72e8b8340ef4ada4"
+ },
+ {
+  "locale": "bg_BG",
+  "opts": {
+   "cpc_options": {
+    "gtm_id": "GTM-NTPKG5T",
+    "gtm_analytics": 1,
+    "gtm_marketing": 1,
+    "mailerlite": 1,
+    "language": "bg",
+    "revision": "2"
+   }
+  },
+  "version": "6f3f99bffc96b365"
+ },
+ {
+  "locale": "el",
+  "opts": {
+   "cpc_options": {
+    "language": "auto",
+    "external_marketing": 1,
+    "mailerlite": 1,
+    "policy_url": "https://x/privacy-policy/",
+    "theme": "custom",
+    "accent": "#003479",
+    "reject_button": 1
+   }
+  },
+  "version": "a5a8b09651737d7d"
+ },
+ {
+  "locale": "en_US",
+  "opts": {
+   "cpc_options": {
+    "ga_id": "G-ABCDEF1234",
+    "language": "en"
+   }
+  },
+  "version": "77217ff0ad1549b2"
+ },
+ {
+  "locale": "el",
+  "opts": {
+   "cpc_options": {
+    "external_marketing": 1
+   },
+   "active_plugins": [
+    "google-listings-and-ads/google-listings-and-ads.php"
+   ]
+  },
+  "version": "c4d8bd254e927258"
+ }
+]

@@ -22,7 +22,7 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME#v}"
           HEADER=$(grep -m1 -E '^ \* Version:' nexconsent.php | awk '{print $3}')
-          CONST=$(grep -m1 -E "const CPC_VERSION" nexconsent.php | sed -E "s/.*'([^']+)'.*/\1/")
+          CONST=$(grep -m1 -E "const NEXCONSENT_VERSION" nexconsent.php | sed -E "s/.*'([^']+)'.*/\1/")
           echo "tag=$TAG header=$HEADER const=$CONST"
           test "$TAG" = "$HEADER" && test "$TAG" = "$CONST"
 
@@ -35,7 +35,8 @@ jobs:
 
       - name: Tests
         run: |
-          find . -name '*.php' -not -path './tests/*' -print0 | xargs -0 -n1 php -l
+          find . -name "*.php" -not -path "./tests/*" -print0 | xargs -0 -n1 php -l
+          python3 tools/po2mo.py && git diff --exit-code languages/
           php tests/test-php.php
           npm install --no-save jsdom@24
           node tests/test-js.js

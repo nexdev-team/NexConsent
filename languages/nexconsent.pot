@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: NexConsent 2.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"X-Domain: nexconsent\n"
+
+msgid "Your cookie choices"
+msgstr ""
+
+msgid "Necessary cookies keep the site and basket working. We use analytics and marketing cookies only with your permission."
+msgstr ""
+
+msgid "Accept all"
+msgstr ""
+
+msgid "Reject optional"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Save choices"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Cookie policy"
+msgstr ""
+
+msgid "Always active"
+msgstr ""
+
+msgid "Necessary"
+msgstr ""
+
+msgid "Analytics"
+msgstr ""
+
+msgid "Marketing"
+msgstr ""
+
+msgid "Remember your choices and support the basket, session and site security."
+msgstr ""
+
+msgid "Help us understand how the site is used and improve it."
+msgstr ""
+
+msgid "Measure advertising performance and allow personalized advertising."
+msgstr ""
+
+msgid "Displays newsletter forms and offers for marketing campaigns."
+msgstr ""
+
+msgid "Cookie settings"
+msgstr ""
+
+msgid "Your choice could not be saved. Optional services remain off."
+msgstr ""
+
+msgid "Cookie / service"
+msgstr ""
+
+msgid "Purpose"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Stores the categories, date and version of your choice."
+msgstr ""
+
+msgid "180 days"
+msgstr ""
+
+msgid "According to store settings"
+msgstr ""
+
+msgid "According to service settings"
+msgstr ""
+
+msgid "Necessary cookies keep the site working. We use analytics and marketing cookies only with your permission."
+msgstr ""
+
+msgid "Remember your choices and support the session and site security."
+msgstr ""
+
+msgid "Other services"
+msgstr ""
+

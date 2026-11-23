@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.0
+Rewritten as a general-purpose plugin that any WordPress site can use.
+
+- **Scripts after consent.** Paste any tracking code (Meta Pixel, TikTok, Clarity, Hotjar…); it runs only after the matching consent. `<noscript>` pixels are removed because they would load without consent.
+- **Other services.** List third-party services and their cookies (`Meta Pixel | _fbp, _fbc`). They appear in the cookie table and are deleted on withdrawal.
+- **Your own texts** for the title, message and buttons; empty fields keep the translated default.
+- **Real translations** (`languages/*.po`): Greek and Bulgarian bundled; other languages through Polylang, WPML, Loco Translate or a `.po` file. Sites without a shop no longer mention a basket.
+- **Floating “Cookie settings” button** after a choice, so visitors can change their mind. It was styled in 1.x but never printed. Links to `#cookie-settings` open the settings too.
+- **Corner box** position as an alternative to the bottom bar.
+- **Quick setup** also reports trackers that load before consent, more cookie banners, and the brand colour of most themes, not only Flatsome. Without a cookie policy page, the privacy policy page is linked.
+- **White label** through `wp-config.php` constants or the `nexconsent_branding` filter; GitHub updates can be switched off.
+- `NexConsent` JavaScript API with `onChange()`, `nexconsent:change` event, `nexconsent_has_consent()` in PHP, `nexconsent_*` filters.
+- GTM package and data layer events renamed to `nexconsent_ready` / `nexconsent_update`.
+- Optimiser exclusions for LiteSpeed, WP Rocket and Cloudflare are built in.
+- The update check no longer sends the site address to GitHub.
+
+**Upgrading from 1.x / CPAPstore Consent:** settings move over automatically and visitors keep their choices (same cookie and consent version). Old shortcodes, GTM events (`cpc_consent_*`), `CPAPConsent` and `data-cpc-category` keep working on those sites. The page cache is cleared once after the update. The floating button and the corner box are off for upgraded sites; switch them on in the settings.
+
 ## 1.3.3
 - Withdrawing consent now also removes Google Ads / Analytics cookies set by other plugins (e.g. Google for WooCommerce), not only by the site's own GTM container.
 - The cookie table names Google for WooCommerce when it is the Google Ads source.

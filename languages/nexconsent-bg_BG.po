@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: NexConsent 2.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: bg_BG\n"
+"X-Domain: nexconsent\n"
+
+msgid "Your cookie choices"
+msgstr "Вашият избор за бисквитките"
+
+msgid "Necessary cookies keep the site and basket working. We use analytics and marketing cookies only with your permission."
+msgstr "Необходимите бисквитки поддържат сайта и количката. Само с Ваше съгласие използваме бисквитки за статистика и маркетинг."
+
+msgid "Accept all"
+msgstr "Приемам всички"
+
+msgid "Reject optional"
+msgstr "Отказвам незадължителните"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Save choices"
+msgstr "Запазвам избора"
+
+msgid "Close"
+msgstr "Затвори"
+
+msgid "Cookie policy"
+msgstr "Политика за бисквитки"
+
+msgid "Always active"
+msgstr "Винаги активни"
+
+msgid "Necessary"
+msgstr "Необходими"
+
+msgid "Analytics"
+msgstr "Статистика"
+
+msgid "Marketing"
+msgstr "Маркетинг"
+
+msgid "Remember your choices and support the basket, session and site security."
+msgstr "Запазват Вашия избор, количката, сесията и сигурността на сайта."
+
+msgid "Help us understand how the site is used and improve it."
+msgstr "Помагат ни да разберем как се използва сайтът и да го подобрим."
+
+msgid "Measure advertising performance and allow personalized advertising."
+msgstr "Измерват ефективността на рекламите и позволяват персонализирана реклама."
+
+msgid "Displays newsletter forms and offers for marketing campaigns."
+msgstr "Показва формуляри и предложения за бюлетини и маркетингови кампании."
+
+msgid "Cookie settings"
+msgstr "Настройки за бисквитки"
+
+msgid "Your choice could not be saved. Optional services remain off."
+msgstr "Изборът не може да бъде запазен. Незадължителните услуги остават изключени."
+
+msgid "Cookie / service"
+msgstr "Бисквитка / услуга"
+
+msgid "Purpose"
+msgstr "Цел"
+
+msgid "Duration"
+msgstr "Продължителност"
+
+msgid "Stores the categories, date and version of your choice."
+msgstr "Запазва категориите, датата и версията на Вашия избор."
+
+msgid "180 days"
+msgstr "180 дни"
+
+msgid "According to store settings"
+msgstr "Според настройките на магазина"
+
+msgid "According to service settings"
+msgstr "Според настройките на съответната услуга"
+
+msgid "Necessary cookies keep the site working. We use analytics and marketing cookies only with your permission."
+msgstr "Необходимите бисквитки поддържат работата на сайта. Само с Ваше съгласие използваме бисквитки за статистика и маркетинг."
+
+msgid "Remember your choices and support the session and site security."
+msgstr "Запазват Вашия избор, сесията и сигурността на сайта."
+
+msgid "Other services"
+msgstr "Други услуги"
+

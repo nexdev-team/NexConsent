@@ -1,7 +1,8 @@
+/*! NexConsent — first-party cookie consent. GPL-2.0-or-later. */
 (function (w, d) {
   'use strict';
-  if (w.CPAPConsent) return;
-  var el = d.getElementById('cpc-config'), config;
+  if (w.NexConsent) return;
+  var el = d.getElementById('nxc-config'), config;
   try { config = JSON.parse(el.textContent); } catch (_) { return; }
   var state = { analytics: false, marketing: false }, decided = false;
   var listeners = [], loaded = {}, maxAge = config.maxAge * 1000, consentTimestamp = 0;
@@ -52,7 +53,20 @@
     syncAttribution();
     // GTM template callbacks run synchronously before the next dataLayer event.
     listeners.slice().forEach(function (fn) { try { fn(signals()); } catch (_) {} });
-    d.dispatchEvent(new CustomEvent('cpapstore:consent', { detail: { analytics: state.analytics, marketing: state.marketing, decided: decided } }));
+    var detail = { analytics: state.analytics, marketing: state.marketing, decided: decided };
+    d.dispatchEvent(new CustomEvent('nexconsent:change', { detail: detail }));
+    if (config.legacy) d.dispatchEvent(new CustomEvent('cpapstore:consent', { detail: detail }));
+  }
+  // dataLayer events for GTM triggers of non-Google tags; sites coming from 1.x also get the old names.
+  function pushEvent(kind) {
+    var item = { event: 'nexconsent_' + kind, nexconsent_analytics: state.analytics, nexconsent_marketing: state.marketing };
+    if (kind === 'ready') item.nexconsent_decided = decided;
+    w.dataLayer.push(item);
+    if (config.legacy) {
+      var old = { event: 'cpc_consent_' + kind, cpc_analytics: state.analytics, cpc_marketing: state.marketing };
+      if (kind === 'ready') old.cpc_decided = decided;
+      w.dataLayer.push(old);
+    }
   }
   function syncWordPress() {
     if (!config.wpApi && typeof w.wp_set_consent !== 'function') return;
@@ -87,20 +101,28 @@
     if (loaded[key]) return;
     loaded[key] = true;
     var script = d.createElement('script'); script.async = true; script.src = src;
-    script.dataset.cpcLoaded = key; script.setAttribute('data-cfasync', 'false');
+    script.setAttribute('data-nxc-loaded', key); script.setAttribute('data-cfasync', 'false');
     d.head.appendChild(script);
   }
+  // <script type="text/plain" data-nxc-category="analytics|marketing" [data-nxc-src] [data-nxc-id] [data-nxc-type] [data-nxc-async]>
+  var prefixes = config.legacy ? ['nxc', 'cpc'] : ['nxc'];
   function activateNodes() {
-    d.querySelectorAll('script[type="text/plain"][data-cpc-category]').forEach(function (node) {
-      if (!allowed(node.dataset.cpcCategory) || node.dataset.cpcActivated === '1') return;
-      node.dataset.cpcActivated = '1';
-      var script = d.createElement('script');
-      script.async = node.getAttribute('data-cpc-async') !== 'false';
-      if (node.dataset.cpcSrc) script.src = node.dataset.cpcSrc;
-      else script.textContent = node.textContent;
-      if (node.dataset.cpcId) script.id = node.dataset.cpcId;
-      script.dataset.cpcLoaded = node.dataset.cpcCategory;
-      d.head.appendChild(script); loaded['custom-' + node.dataset.cpcCategory] = true;
+    prefixes.forEach(function (p) {
+      d.querySelectorAll('script[type="text/plain"][data-' + p + '-category]').forEach(function (node) {
+        var category = node.getAttribute('data-' + p + '-category');
+        if (!allowed(category) || node.getAttribute('data-nxc-activated') === '1') return;
+        node.setAttribute('data-nxc-activated', '1');
+        var script = d.createElement('script'), src = node.getAttribute('data-' + p + '-src'), id = node.getAttribute('data-' + p + '-id');
+        if (node.getAttribute('data-nxc-type') === 'module') script.type = 'module';
+        script.async = node.getAttribute('data-' + p + '-async') !== 'false';
+        if (src) script.src = src; else script.textContent = node.textContent;
+        if (id) script.id = id;
+        if (node.nonce) script.nonce = node.nonce;
+        script.setAttribute('data-nxc-loaded', category);
+        // Insert where the placeholder is, so scripts keep their order and position.
+        (node.parentNode || d.head).insertBefore(script, node.nextSibling);
+        loaded['custom-' + category] = true;
+      });
     });
   }
   function load() {
@@ -139,7 +161,7 @@
       w.location.reload(); return true;
     }
     load();
-    w.dataLayer.push({ event: 'cpc_consent_update', cpc_analytics: state.analytics, cpc_marketing: state.marketing });
+    pushEvent('update');
     return true;
   }
   w.gtag('consent', 'default', signals());
@@ -163,18 +185,21 @@
     return push.apply(w.dataLayer, items);
   };
   // Current state for GTM triggers of non-Google tags (see the GTM package in the plugin settings).
-  w.dataLayer.push({ event: 'cpc_consent_ready', cpc_analytics: state.analytics, cpc_marketing: state.marketing, cpc_decided: decided });
+  pushEvent('ready');
   if (!state.analytics) cleanCookies('analytics');
   if (!state.marketing) cleanCookies('marketing');
-  w.CPAPConsent = {
+  // Public API: NexConsent.get(), .save({analytics, marketing}), .open(), .onChange(fn).
+  w.NexConsent = {
     get: function () { return { necessary: true, analytics: state.analytics, marketing: state.marketing, decided: decided, bridge: config.bridge }; },
     save: save,
+    open: function () { d.dispatchEvent(new CustomEvent('nexconsent:open')); },
+    onChange: function (fn) { d.addEventListener('nexconsent:change', function (e) { fn(e.detail); }); },
     subscribeGoogle: function (fn) { listeners.push(fn); fn(signals()); },
     refresh: load,
     syncWordPress: syncWordPress,
-    syncAttribution: syncAttribution,
-    open: function () { d.dispatchEvent(new CustomEvent('cpapstore:open')); }
+    syncAttribution: syncAttribution
   };
+  if (config.legacy) w.CPAPConsent = w.NexConsent;
   function reconcile() {
     var record = read(), next = { analytics: !!(record && record.analytics && config.categories.indexOf('analytics') !== -1),
       marketing: !!(record && record.marketing && config.categories.indexOf('marketing') !== -1) };

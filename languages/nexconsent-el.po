@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: NexConsent 2.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: el\n"
+"X-Domain: nexconsent\n"
+
+msgid "Your cookie choices"
+msgstr "Η επιλογή σου για τα cookies"
+
+msgid "Necessary cookies keep the site and basket working. We use analytics and marketing cookies only with your permission."
+msgstr "Τα αναγκαία cookies υποστηρίζουν το site και το καλάθι. Μόνο με τη συγκατάθεσή σου χρησιμοποιούμε cookies στατιστικών και marketing."
+
+msgid "Accept all"
+msgstr "Αποδοχή όλων"
+
+msgid "Reject optional"
+msgstr "Απόρριψη προαιρετικών"
+
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+msgid "Save choices"
+msgstr "Αποθήκευση επιλογών"
+
+msgid "Close"
+msgstr "Κλείσιμο"
+
+msgid "Cookie policy"
+msgstr "Πολιτική cookies"
+
+msgid "Always active"
+msgstr "Πάντα ενεργά"
+
+msgid "Necessary"
+msgstr "Αναγκαία"
+
+msgid "Analytics"
+msgstr "Στατιστικά"
+
+msgid "Marketing"
+msgstr "Marketing"
+
+msgid "Remember your choices and support the basket, session and site security."
+msgstr "Αποθηκεύουν την επιλογή σου και υποστηρίζουν το καλάθι, τη συνεδρία και την ασφάλεια του site."
+
+msgid "Help us understand how the site is used and improve it."
+msgstr "Μας βοηθούν να κατανοούμε τη χρήση του site και να το βελτιώνουμε."
+
+msgid "Measure advertising performance and allow personalized advertising."
+msgstr "Μετρούν την απόδοση διαφημίσεων και επιτρέπουν εξατομικευμένη διαφήμιση."
+
+msgid "Displays newsletter forms and offers for marketing campaigns."
+msgstr "Εμφανίζει φόρμες και προτάσεις για ενημερωτικά δελτία και καμπάνιες marketing."
+
+msgid "Cookie settings"
+msgstr "Ρυθμίσεις cookies"
+
+msgid "Your choice could not be saved. Optional services remain off."
+msgstr "Δεν αποθηκεύτηκε η επιλογή. Οι προαιρετικές υπηρεσίες παραμένουν ανενεργές."
+
+msgid "Cookie / service"
+msgstr "Cookie / υπηρεσία"
+
+msgid "Purpose"
+msgstr "Σκοπός"
+
+msgid "Duration"
+msgstr "Διάρκεια"
+
+msgid "Stores the categories, date and version of your choice."
+msgstr "Αποθηκεύει τις κατηγορίες, την ημερομηνία και την έκδοση της επιλογής σου."
+
+msgid "180 days"
+msgstr "180 ημέρες"
+
+msgid "According to store settings"
+msgstr "Σύμφωνα με τις ρυθμίσεις του καταστήματος"
+
+msgid "According to service settings"
+msgstr "Σύμφωνα με τις ρυθμίσεις της υπηρεσίας"
+
+msgid "Necessary cookies keep the site working. We use analytics and marketing cookies only with your permission."
+msgstr "Τα αναγκαία cookies υποστηρίζουν τη λειτουργία του site. Μόνο με τη συγκατάθεσή σου χρησιμοποιούμε cookies στατιστικών και marketing."
+
+msgid "Remember your choices and support the session and site security."
+msgstr "Αποθηκεύουν την επιλογή σου και υποστηρίζουν τη συνεδρία και την ασφάλεια του site."
+
+msgid "Other services"
+msgstr "Άλλες υπηρεσίες"
+
