@@ -17,7 +17,7 @@ function page(bridge, cookies) {
     patterns: { analytics: ['_ga', '_ga_*'], marketing: ['_gcl_*', 'sbjs_*'] }, wpCookiePrefix: 'wp_consent', wpApi: false, bridge };
   const html = `<!doctype html><html><head><script id="cpc-config" type="application/json">${JSON.stringify(config)}</script>
 <script>${core}</script></head><body><main>x</main>
-<section id="cpc-banner" hidden><button data-cpc="accept">A</button><button data-cpc="open">S</button></section>
+<section id="cpc-banner" hidden><button data-cpc="accept">A</button><button data-cpc="reject">R</button><button data-cpc="open">S</button></section>
 <div id="cpc-overlay" hidden><section role="dialog" tabindex="-1"><input type="checkbox" data-cpc-category="analytics"><input type="checkbox" data-cpc-category="marketing"><button data-cpc="save">Save</button></section></div>
 <script>var wc_order_attribution={params:{allowTracking:false,lifetime:1e-5,session:30,base64:false,prefix:'wc_order_attribution_'},fields:{}};</script>
 ${bridge === 'builtin' ? `<script>${inlineBefore}</script>` : ''}
@@ -44,6 +44,13 @@ function check(name, cond, extra) { console.log((cond ? 'PASS ' : 'FAIL ') + nam
   // withdraw
   w.CPAPConsent.save({ analytics: true, marketing: false }); await wait(50);
   check('builtin withdraw: sbjs removed', !/sbjs_/.test(w.document.cookie), w.document.cookie);
+
+  // 1b. Reject button on the first screen
+  w = page('builtin'); await wait(700);
+  w.document.querySelector('[data-cpc="reject"]').click(); await wait(50);
+  const st = w.CPAPConsent.get();
+  check('reject button: decided, nothing allowed, banner hidden', st.decided && !st.analytics && !st.marketing && w.document.getElementById('cpc-banner').hidden === true);
+  check('reject button: no sbjs written', !/sbjs_/.test(w.document.cookie), w.document.cookie);
 
   // 2. Returning visitor with marketing consent and existing attribution
   w = page('builtin', [consentCookie(true), 'sbjs_first=typ%3Dreferral%7C%7C%7Csrc%3Dgoogle; path=/']); await wait(700);

@@ -21,6 +21,7 @@ function cpc_options() {
         'mailerlite' => $legacy_ml ? 1 : 0,
         'bridge' => 'auto',
         'theme' => 'blue', 'accent' => '#1e73be',
+        'reject_button' => 0,
     ]);
 }
 
@@ -312,8 +313,9 @@ add_action('wp_footer', function () {
           <p><?php echo esc_html($t['body']); ?> <a href="<?php echo esc_url($o['policy_url']); ?>"><?php echo esc_html($t['policy']); ?></a></p>
           <p class="cpc-error" role="status" hidden><?php echo esc_html($t['error']); ?></p>
         </div>
-        <div class="cpc-actions">
+        <div class="cpc-actions<?php echo $o['reject_button'] ? ' cpc-actions--3' : ''; ?>">
           <button type="button" data-cpc="accept"><?php echo esc_html($t['accept']); ?></button>
+          <?php if ($o['reject_button']) : ?><button type="button" class="cpc-quiet" data-cpc="reject"><?php echo esc_html($t['reject']); ?></button><?php endif; ?>
           <button type="button" class="cpc-quiet" data-cpc="open"><?php echo esc_html($t['settings']); ?></button>
         </div>
       </div>
@@ -368,6 +370,7 @@ function cpc_sanitize($input) {
         'bridge' => in_array($input['bridge'] ?? '', ['auto', 'wpca', 'builtin'], true) ? $input['bridge'] : 'auto',
         'theme' => in_array($input['theme'] ?? '', ['blue', 'green', 'custom'], true) ? $input['theme'] : 'blue',
         'accent' => cpc_hex($input['accent'] ?? '') ?: '#1e73be',
+        'reject_button' => empty($input['reject_button']) ? 0 : 1,
     ];
     if ($out['gtm_id']) $out['ga_id'] = '';
     foreach (['gtm_id', 'ga_id'] as $key) if (!empty($input[$key]) && !cpc_valid_id($input[$key], $key === 'gtm_id' ? 'gtm' : 'ga')) add_settings_error('cpc_options', $key, 'Invalid or placeholder tracking ID was removed.');
@@ -453,7 +456,7 @@ add_action('admin_init', function () {
     delete_transient('cpc_needs_autosetup');
     $found = cpc_detect();
     $found['apply_colour'] = true;
-    update_option('cpc_options', cpc_sanitize(cpc_detected_options($found)));
+    update_option('cpc_options', cpc_sanitize(['reject_button' => 1] + cpc_detected_options($found)));
     set_transient('cpc_autosetup_report', $found, DAY_IN_SECONDS);
 });
 add_action('admin_post_cpc_autodetect', function () {
@@ -571,6 +574,7 @@ function cpc_settings_page() {
           <tr><th><label for="cpc-<?php echo esc_attr($k); ?>"><?php echo esc_html($v); ?></label></th><td><input class="regular-text" id="cpc-<?php echo esc_attr($k); ?>" name="cpc_options[<?php echo esc_attr($k); ?>]" value="<?php echo esc_attr($o[$k]); ?>" type="<?php echo $k === 'policy_url' ? 'url' : 'text'; ?>"></td></tr>
           <?php endforeach; ?>
           <tr><th>Services used by this site</th><td><?php foreach (['gtm_analytics' => 'Google Analytics in this GTM container', 'gtm_marketing' => 'Google Ads in this GTM container', 'mailerlite' => 'MailerLite WooCommerce universal loader', 'external_analytics' => 'Other analytics services (register their cookies with cpc_services)', 'external_marketing' => 'Other marketing services (register their cookies with cpc_services)'] as $k => $v) : ?><p><label><input type="checkbox" name="cpc_options[<?php echo esc_attr($k); ?>]" value="1" <?php checked($o[$k], 1); ?>> <?php echo esc_html($v); ?></label></p><?php endforeach; ?></td></tr>
+          <tr><th>Reject button</th><td><label><input type="checkbox" name="cpc_options[reject_button]" value="1" <?php checked($o['reject_button'], 1); ?>> Show “Reject optional” on the banner, next to “Accept all” (recommended: data protection authorities expect refusing to be as easy as accepting)</label></td></tr>
           <tr><th><label for="cpc-theme">Banner colours</label></th><td><select id="cpc-theme" name="cpc_options[theme]">
             <?php foreach (['blue' => 'Blue', 'green' => 'Green', 'custom' => 'Custom brand colour'] as $k => $v) : ?><option value="<?php echo esc_attr($k); ?>" <?php selected($o['theme'], $k); ?>><?php echo esc_html($v); ?></option><?php endforeach; ?>
           </select> <input type="color" id="cpc-accent" name="cpc_options[accent]" value="<?php echo esc_attr(cpc_hex($o['accent']) ?: '#1e73be'); ?>" aria-label="Brand colour">

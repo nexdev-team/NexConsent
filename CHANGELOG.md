@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.2
+- Optional “Reject optional” button on the first banner screen (Settings → NexConsent → Reject button). On by default for new installs; existing sites keep their current banner until it is switched on.
+
 ## 1.3.1
 - Sites moving from CPAPstore Consent keep their banner colours (green or blue) instead of switching to blue.
 
