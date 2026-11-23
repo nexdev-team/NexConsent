@@ -1,0 +1,56 @@
+name: Release
+
+# Push a tag like v1.3.1 whose number matches "Version:" in nexconsent.php.
+# The workflow runs the tests, builds nexconsent.zip (top folder "nexconsent/")
+# and publishes a GitHub release. Sites running NexConsent pick it up as a normal
+# WordPress update (Dashboard → Updates) within 6 hours, or at once with
+# "Check for updates" on the Plugins screen.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version matches tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          HEADER=$(grep -m1 -E '^ \* Version:' nexconsent.php | awk '{print $3}')
+          CONST=$(grep -m1 -E "const CPC_VERSION" nexconsent.php | sed -E "s/.*'([^']+)'.*/\1/")
+          echo "tag=$TAG header=$HEADER const=$CONST"
+          test "$TAG" = "$HEADER" && test "$TAG" = "$CONST"
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Tests
+        run: |
+          find . -name '*.php' -not -path './tests/*' -print0 | xargs -0 -n1 php -l
+          php tests/test-php.php
+          npm install --no-save jsdom@24
+          node tests/test-js.js
+
+      - name: Build nexconsent.zip
+        run: |
+          mkdir -p build/nexconsent
+          rsync -a --exclude-from=.distignore ./ build/nexconsent/
+          (cd build && zip -r -X ../nexconsent.zip nexconsent)
+          unzip -l nexconsent.zip
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" nexconsent.zip \
+            --title "NexConsent ${GITHUB_REF_NAME#v}" \
+            --notes-file <(awk "/^## ${GITHUB_REF_NAME#v}/{f=1;next}/^## /{f=0}f" CHANGELOG.md)

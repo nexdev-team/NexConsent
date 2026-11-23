@@ -1,0 +1,13 @@
+.git
+.github
+.gitignore
+.distignore
+tests
+build
+node_modules
+package.json
+package-lock.json
+nexconsent.zip
+README.md
+CHANGELOG.md
+*.DS_Store
