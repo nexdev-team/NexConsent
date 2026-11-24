@@ -16,6 +16,9 @@ function nexconsent_defaults() {
         // Custom banner texts; empty = translated default.
         'title' => '', 'body' => '', 'accept' => '', 'reject' => '', 'settings' => '',
         'gtm_id' => '', 'ga_id' => '', 'gtm_analytics' => 0, 'gtm_marketing' => 0,
+        // 'plugin' = NexConsent loads GTM after consent; 'external' = another service already loads it
+        // (Cloudflare / Google tag gateway, server-side GTM): NexConsent only sends Consent Mode signals.
+        'gtm_loader' => 'plugin',
         'mailerlite' => 0, 'external_analytics' => 0, 'external_marketing' => 0,
         // "Provider | cookie, cookie" per line.
         'services_analytics' => '', 'services_marketing' => '',
@@ -93,6 +96,7 @@ function nexconsent_clean(array $in) {
         'revision' => substr(sanitize_text_field($in['revision'] ?? '1'), 0, 20) ?: '1',
         'policy_url' => esc_url_raw(trim((string) ($in['policy_url'] ?? ''))),
         'bridge' => in_array($in['bridge'] ?? '', ['auto', 'wpca', 'builtin'], true) ? $in['bridge'] : 'auto',
+        'gtm_loader' => ($in['gtm_loader'] ?? '') === 'external' ? 'external' : 'plugin',
         'theme' => in_array($in['theme'] ?? '', ['blue', 'green', 'custom'], true) ? $in['theme'] : 'blue',
         'accent' => nexconsent_hex($in['accent'] ?? '') ?: '#1e73be',
         'position' => in_array($in['position'] ?? '', ['bar', 'box'], true) ? $in['position'] : 'bar',
@@ -362,6 +366,7 @@ function nexconsent_config() {
         'patterns' => array_map(function ($p) { return array_values(array_unique($p)); }, $patterns),
         'wpCookiePrefix' => apply_filters('wp_consent_cookie_prefix', 'wp_consent'),
         'wpApi' => function_exists('wp_has_consent'), 'bridge' => nexconsent_bridge(), 'legacy' => (bool) $o['legacy'],
+        'gtmExternal' => $gtm !== '' && $o['gtm_loader'] === 'external',
     ];
 }
 
@@ -406,6 +411,13 @@ function nexconsent_policy_url() {
 
 add_action('wp_head', function () {
     if (is_admin() || !nexconsent_categories()) return;
+    // Consent Mode default, inline so it is in place before any Google tag runs, including one
+    // injected at the top of the page by a CDN (Cloudflare / Google tag gateway). consent-core.js
+    // then sends the visitor's stored choice as an update.
+    echo '<script id="nxc-default" data-no-optimize="1" data-no-defer="1" data-cfasync="false" nowprocket>'
+        . 'window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){dataLayer.push(arguments);};'
+        . "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});"
+        . '</script>' . "\n";
     echo '<script id="nxc-config" type="application/json">' . wp_json_encode(nexconsent_config(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '</script>' . "\n";
     // Must run before any optional script: synchronous, local, excluded from optimisers.
     echo '<script id="nxc-bootstrap" src="' . esc_url(plugins_url('assets/consent-core.js', NEXCONSENT_FILE) . '?ver=' . NEXCONSENT_VERSION)

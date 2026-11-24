@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2
+- **GTM is loaded only once.** New setting “Who loads GTM”: NexConsent (default) or another service such as Cloudflare / Google tag gateway or server-side GTM. With another service, NexConsent never loads GTM itself and only sends Consent Mode signals; non-Google tags wait through GTM's Additional consent checks. Quick setup detects Google tag gateway and selects this automatically.
+- Safety net: if GTM is already on the page from any other source, NexConsent does not load it a second time (no duplicate page views or conversions).
+- The Consent Mode default (denied, wait_for_update 500 ms) is now printed inline at the top of `<head>`, so it is in place before any Google tag runs, including tags injected by a CDN.
+
 ## 2.0.1
 - Fix: a fixed banner language (e.g. Bulgarian) showed English. The bundled `.mo` files had a header WordPress's MO reader rejects; the automatic language was not affected.
 

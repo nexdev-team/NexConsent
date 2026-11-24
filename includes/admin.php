@@ -46,7 +46,7 @@ add_filter('plugin_action_links_' . plugin_basename(NEXCONSENT_FILE), function (
  * Detection: what the site already uses, so a fresh install works at once.
  * ------------------------------------------------------------------------- */
 function nexconsent_detect() {
-    $found = ['gtm' => [], 'ga' => [], 'policy_url' => '', 'mailerlite' => 0, 'other_banners' => [], 'unblocked' => [], 'scan_ok' => false, 'accent' => nexconsent_theme_colour()];
+    $found = ['gtm' => [], 'ga' => [], 'policy_url' => '', 'mailerlite' => 0, 'other_banners' => [], 'unblocked' => [], 'gateway' => false, 'scan_ok' => false, 'accent' => nexconsent_theme_colour()];
     // Loopback request to this site only, with the TLS policy WordPress core uses for loopbacks.
     $resp = wp_remote_get(add_query_arg('nexconsent_scan', time(), home_url('/')), [
         'timeout' => 15, 'redirection' => 3, 'limit_response_size' => 3 * MB_IN_BYTES,
@@ -69,6 +69,8 @@ function nexconsent_detect() {
             if (preg_match_all('#googletagmanager\.com/gtag/js\?id=(G-[A-Z0-9]{6,12})#i', $all, $m)) $ga = array_merge($ga, $m[1]);
             if (preg_match_all('#gtag\(\s*[\'"]config[\'"]\s*,\s*[\'"](G-[A-Z0-9]{6,12})[\'"]#', $s[2], $m)) $ga = array_merge($ga, $m[1]);
         }
+        // Google tag gateway (e.g. Cloudflare) injects GTM at the edge, outside WordPress.
+        $found['gateway'] = (bool) preg_match('/google_tags_first_party|gtm\.js\?id=GTM-[A-Z0-9]+&(?:amp;)?gtg_health/i', $code);
         $valid = function ($kind) { return function ($id) use ($kind) { return nexconsent_valid_id($id, $kind); }; };
         $found['gtm'] = array_values(array_unique(array_filter(array_map('strtoupper', $gtm), $valid('gtm'))));
         $found['ga'] = array_values(array_unique(array_filter(array_map('strtoupper', $ga), $valid('ga'))));
@@ -96,6 +98,7 @@ function nexconsent_detected_options($found, $apply_colour = false) {
     $o = nexconsent_options();
     if (!empty($found['gtm'])) { $o['gtm_id'] = $found['gtm'][0]; $o['ga_id'] = ''; $o['gtm_analytics'] = 1; $o['gtm_marketing'] = 1; }
     elseif (!empty($found['ga'])) { $o['ga_id'] = $found['ga'][0]; }
+    $o['gtm_loader'] = !empty($found['gateway']) ? 'external' : 'plugin';
     if (!empty($found['policy_url'])) $o['policy_url'] = $found['policy_url'];
     $o['mailerlite'] = $found['mailerlite'];
     if ($apply_colour && !empty($found['accent'])) { $o['theme'] = 'custom'; $o['accent'] = $found['accent']; }
@@ -221,6 +224,7 @@ function nexconsent_settings_page() {
             <?php if (empty($found['scan_ok'])) : ?><li style="color:#b32d2e"><?php esc_html_e('The home page could not be scanned; enter the IDs by hand.', 'nexconsent'); ?></li><?php endif; ?>
             <?php if (!empty($found['other_banners'])) : ?><li style="color:#b32d2e"><strong><?php echo esc_html(sprintf(__('Another cookie banner is active: %s. Remove it, otherwise visitors see two banners.', 'nexconsent'), implode(', ', $found['other_banners']))); ?></strong></li><?php endif; ?>
             <?php if (!empty($found['unblocked'])) : ?><li style="color:#b32d2e"><strong><?php echo esc_html(sprintf(__('These load before consent: %s. Remove them from the theme or plugin that adds them and paste their code into “Scripts after consent” below.', 'nexconsent'), implode(', ', $found['unblocked']))); ?></strong></li><?php endif; ?>
+            <?php if (!empty($found['gateway'])) : ?><li><strong><?php esc_html_e('GTM is loaded by Google tag gateway (e.g. Cloudflare), outside WordPress. NexConsent will not load it a second time; it sends the consent signals and tags wait for them.', 'nexconsent'); ?></strong></li><?php endif; ?>
             <?php if (count($found['gtm']) > 1) : ?><li style="color:#b32d2e"><?php esc_html_e('More than one GTM container is on the page; the first one was used.', 'nexconsent'); ?></li><?php endif; ?>
           </ul>
         <?php else : ?>
@@ -266,6 +270,8 @@ function nexconsent_settings_page() {
         <h2 class="title"><?php esc_html_e('Tracking and services', 'nexconsent'); ?></h2>
         <table class="form-table" role="presentation"><tbody>
           <?php nexconsent_field('gtm_id', __('GTM container ID', 'nexconsent'), 'text', __('Loaded only after consent, with Google Consent Mode v2.', 'nexconsent'), 'placeholder="GTM-XXXXXXX"'); ?>
+          <?php nexconsent_select('gtm_loader', __('Who loads GTM', 'nexconsent'), ['plugin' => __('NexConsent, after consent (recommended)', 'nexconsent'), 'external' => __('Another service: Cloudflare / Google tag gateway, server-side GTM', 'nexconsent')],
+              __('With another service, GTM loads on every page and NexConsent only sends Consent Mode signals: Google tags work in consent mode, and every non-Google tag in GTM needs <strong>Additional consent</strong> (ad_storage or analytics_storage) in Tag Manager → Tags → Consent Overview.', 'nexconsent')); ?>
           <?php nexconsent_field('ga_id', __('GA4 measurement ID', 'nexconsent'), 'text', __('Only without GTM.', 'nexconsent'), 'placeholder="G-XXXXXXXXXX"'); ?>
           <tr><th><?php esc_html_e('Services', 'nexconsent'); ?></th><td>
             <?php nexconsent_checkbox('gtm_analytics', __('The GTM container runs Google Analytics', 'nexconsent')); ?>

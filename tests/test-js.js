@@ -1,4 +1,4 @@
-const { JSDOM } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs');
 const core = fs.readFileSync(require('path').join(__dirname, '../assets/consent-core.js'), 'utf8');
 const ui = fs.readFileSync(require('path').join(__dirname, '../assets/consent-ui.js'), 'utf8');
@@ -14,17 +14,20 @@ const inlineBefore = 'if(window.wc_order_attribution&&wc_order_attribution.param
 
 function page(bridge, cookies, opts) {
   opts = opts || {};
-  const config = { legacy: !!opts.legacy, cookie: opts.legacy ? 'cpapstore_consent' : 'nexconsent', maxAge: 15552000, version: 'v1', categories: ['analytics', 'marketing'], gtm: '', ga: '',
+  const config = { legacy: !!opts.legacy, cookie: opts.legacy ? 'cpapstore_consent' : 'nexconsent', maxAge: 15552000, version: 'v1', categories: ['analytics', 'marketing'], gtm: opts.gtm || '', gtmExternal: !!opts.gtmExternal, ga: '',
     patterns: { analytics: ['_ga', '_ga_*'], marketing: ['_gcl_*', 'sbjs_*'] }, wpCookiePrefix: 'wp_consent', wpApi: false, bridge };
   const html = `<!doctype html><html><head><script id="nxc-config" type="application/json">${JSON.stringify(config)}</script>
-<script>${core}</script></head><body><main>x</main>${opts.body || ''}
+${opts.head || ''}<script>${core}</script></head><body><main>x</main>${opts.body || ''}
 <section id="nxc-banner" hidden><button data-nxc="accept">A</button><button data-nxc="reject">R</button><button data-nxc="open">S</button></section>
 <div id="nxc-overlay" hidden><section role="dialog" tabindex="-1"><input type="checkbox" data-nxc-choice="analytics"><input type="checkbox" data-nxc-choice="marketing"><button data-nxc="save">Save</button></section></div><button id="nxc-reopen" data-nxc="open" hidden>C</button>
 <script>var wc_order_attribution={params:{allowTracking:false,lifetime:1e-5,session:30,base64:false,prefix:'wc_order_attribution_'},fields:{}};</script>
 ${bridge === 'builtin' ? `<script>${inlineBefore}</script>` : ''}
 <script>${sbjs}</script><script>${wcOA}</script><script>${ui}</script></body></html>`;
-  const dom = new JSDOM(html, { url: 'https://shop.example.com/', runScripts: 'dangerously', pretendToBeVisual: true,
-    beforeParse(w) { (cookies || []).forEach(c => { w.document.cookie = c; }); w.location.reload = () => { w.__reloaded = true; }; } });
+  // jsdom cannot navigate; a reload shows up as a "not implemented: navigation" error.
+  const virtualConsole = new VirtualConsole(); let win;
+  virtualConsole.on('jsdomError', e => { if (/navigation/.test(e.message) && win) win.__reloaded = true; else console.error(e.message); });
+  const dom = new JSDOM(html, { url: 'https://shop.example.com/', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole,
+    beforeParse(w) { win = w; (cookies || []).forEach(c => { w.document.cookie = c; }); } });
   return dom.window;
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -104,6 +107,33 @@ function check(name, cond, extra) { console.log((cond ? 'PASS ' : 'FAIL ') + nam
   await wait(300);
   w.document.getElementById('lnk').click(); await wait(20);
   check('#cookie-settings link opens the dialog', w.document.getElementById('nxc-overlay').hidden === false);
+
+  // 9. GTM loaded once only
+  const gtmTags = win => [...win.document.querySelectorAll('script[src*="gtm.js"]')].length;
+  const gtmEvents = win => win.dataLayer.filter(x => x && x.event === 'gtm.js').length;
+  w = page('builtin', [], { gtm: 'GTM-TEST1' }); await wait(300);
+  check('plugin loader: no GTM before consent', gtmTags(w) === 0);
+  w.NexConsent.save({ analytics: true, marketing: true }); await wait(50);
+  check('plugin loader: GTM loaded once after consent', gtmTags(w) === 1 && gtmEvents(w) === 1);
+  w.NexConsent.refresh(); await wait(20);
+  check('plugin loader: never twice', gtmTags(w) === 1 && gtmEvents(w) === 1);
+
+  const gateway = `<script>(function(w,i,g){w[g]=w[g]||[];w[g].push(i)})(window,'GTM-TEST1','google_tags_first_party');</script>`;
+  w = page('builtin', [], { gtm: 'GTM-TEST1', head: gateway }); await wait(300);
+  w.NexConsent.save({ analytics: true, marketing: true }); await wait(50);
+  check('GTM from Google tag gateway detected: not loaded again', gtmTags(w) === 0 && gtmEvents(w) === 0);
+  check('...and accepting needs no reload', !w.__reloaded);
+  check('...consent update sent', w.dataLayer.some(x => x && x[0] === 'consent' && x[1] === 'update' && x[2].ad_storage === 'granted'));
+
+  w = page('builtin', [], { gtm: 'GTM-TEST1', head: '<script src="https://www.googletagmanager.com/gtm.js?id=GTM-TEST1&gtg_health=1"></script>' }); await wait(300);
+  w.NexConsent.save({ analytics: true, marketing: false }); await wait(50);
+  check('GTM script already on the page: not loaded again', gtmTags(w) === 1 && gtmEvents(w) === 0);
+
+  w = page('builtin', [consentCookie(true)], { gtm: 'GTM-TEST1', gtmExternal: true }); await wait(300);
+  check('external loader: never injects GTM, even with consent', gtmTags(w) === 0 && gtmEvents(w) === 0);
+  check('external loader: stored consent sent as update', w.dataLayer.some(x => x && x[0] === 'consent' && x[1] === 'update' && x[2].ad_storage === 'granted'));
+  w.NexConsent.save({ analytics: false, marketing: false }); await wait(50);
+  check('external loader: withdrawal reloads to stop running tags', w.__reloaded === true);
   console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');
   process.exit(fails ? 1 : 0);
 })();

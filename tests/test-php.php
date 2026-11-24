@@ -202,6 +202,20 @@ $GLOBALS['opts'] = [];
 $f = nexconsent_detect();
 check('re-detect keeps colours; fresh install uses theme colour', nexconsent_detected_options($f)['theme'] === 'blue' && nexconsent_detected_options($f, true)['accent'] === '#29a643');
 
+/* 8b. Google tag gateway */
+$GLOBALS['opts'] = [];
+$GLOBALS['html'] = '<script async src="/ri8k/"></script><script>(function(w,i,g){w[g]=w[g]||[];w[g].push(i)})(window,\'GTM-NGKVVX5\',\'google_tags_first_party\');</script><script src="https://www.googletagmanager.com/gtm.js?id=GTM-NGKVVX5&gtg_health=1"></script>';
+$f = nexconsent_detect();
+$o = nexconsent_clean(nexconsent_detected_options($f));
+check('gateway detected: GTM found, loader external', $f['gateway'] === true && $o['gtm_id'] === 'GTM-NGKVVX5' && $o['gtm_loader'] === 'external');
+$GLOBALS['opts'] = ['nexconsent_options' => $o];
+check('config tells the browser not to load GTM', nexconsent_config()['gtmExternal'] === true);
+$v_ext = nexconsent_config()['version']; $GLOBALS['opts']['nexconsent_options']['gtm_loader'] = 'plugin';
+check('loader choice never changes the consent version', nexconsent_config()['version'] === $v_ext && nexconsent_config()['gtmExternal'] === false);
+check('loader value sanitised', nexconsent_clean(['gtm_loader' => '<x>'])['gtm_loader'] === 'plugin');
+$GLOBALS['is_admin'] = false; ob_start(); foreach ($GLOBALS['actions']['wp_head'] as $cb) $cb(); $head = ob_get_clean(); $GLOBALS['is_admin'] = true;
+check('Consent Mode default printed inline before config and core', strpos($head, 'id="nxc-default"') !== false && strpos($head, 'id="nxc-default"') < strpos($head, 'id="nxc-config"') && strpos($head, "wait_for_update:500") !== false);
+
 /* 9. GTM package */
 set_opts(['gtm_id' => 'GTM-NTPKG5T', 'gtm_analytics' => 1]);
 $cv = nexconsent_gtm_package()['containerVersion'];

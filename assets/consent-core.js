@@ -125,8 +125,19 @@
       });
     });
   }
+  // GTM already on the page from another source (CDN / Google tag gateway, theme, other plugin)?
+  // Loading it again would fire every tag twice.
+  function gtmPresent() {
+    if (w.google_tag_manager && w.google_tag_manager[config.gtm]) return true;
+    var first = w.google_tags_first_party;
+    if (first && typeof first.indexOf === 'function' && first.indexOf(config.gtm) !== -1) return true;
+    return !!d.querySelector('script[src*="gtm.js?id=' + config.gtm + '"]:not([data-nxc-loaded])');
+  }
   function load() {
-    if (config.gtm && (allowed('analytics') || allowed('marketing'))) {
+    if (config.gtm && config.gtmExternal) {
+      // Another service loads GTM; tags wait for the Consent Mode signals sent here.
+    } else if (config.gtm && (allowed('analytics') || allowed('marketing'))) {
+      if (!loaded.gtm && gtmPresent()) { loaded.gtm = 'external'; }
       if (!loaded.gtm) w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
       inject('https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(config.gtm), 'gtm');
     } else if (!config.gtm && config.ga && allowed('analytics')) {
@@ -153,11 +164,11 @@
     if (!state.marketing) cleanCookies('marketing');
     emit();
     // Stop previously activated third-party code on withdrawal: denial, cleanup, then reload.
-    if ((previous.analytics && !next.analytics || previous.marketing && !next.marketing) && Object.keys(loaded).length) {
+    if ((previous.analytics && !next.analytics || previous.marketing && !next.marketing) && (Object.keys(loaded).length || config.gtmExternal)) {
       w.location.reload(); return true;
     }
     // Reinitialize category-specific tags after adding consent to an already loaded container.
-    if (loaded.gtm && ((!previous.analytics && next.analytics) || (!previous.marketing && next.marketing))) {
+    if (loaded.gtm === true && ((!previous.analytics && next.analytics) || (!previous.marketing && next.marketing))) {
       w.location.reload(); return true;
     }
     load();
