@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.3
+- Fix: with “Who loads GTM: another service” and no other GTM snippet on the page, no tag fired, because GTM page view triggers need the `gtm.js` event of the standard snippet. NexConsent now sends that event once, after the page is parsed, and only if nothing else on the page sent it.
+
 ## 2.0.2
 - **GTM is loaded only once.** New setting “Who loads GTM”: NexConsent (default) or another service such as Cloudflare / Google tag gateway or server-side GTM. With another service, NexConsent never loads GTM itself and only sends Consent Mode signals; non-Google tags wait through GTM's Additional consent checks. Quick setup detects Google tag gateway and selects this automatically.
 - Safety net: if GTM is already on the page from any other source, NexConsent does not load it a second time (no duplicate page views or conversions).

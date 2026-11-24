@@ -135,7 +135,16 @@
   }
   function load() {
     if (config.gtm && config.gtmExternal) {
-      // Another service loads GTM; tags wait for the Consent Mode signals sent here.
+      // Another service loads gtm.js (e.g. Google tag gateway). GTM still needs the 'gtm.js' event of the
+      // standard snippet for page view triggers. Checked once the page is parsed, so a snippet printed
+      // later in <head> (theme, another plugin) is seen and the event is never sent twice.
+      if (!loaded.gtmEvent) {
+        loaded.gtmEvent = true;
+        var pushGtmEvent = function () {
+          if (!w.dataLayer.some(function (x) { return x && x.event === 'gtm.js'; })) w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+        };
+        if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', pushGtmEvent); else pushGtmEvent();
+      }
     } else if (config.gtm && (allowed('analytics') || allowed('marketing'))) {
       if (!loaded.gtm && gtmPresent()) { loaded.gtm = 'external'; }
       if (!loaded.gtm) w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });

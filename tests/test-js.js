@@ -130,10 +130,16 @@ function check(name, cond, extra) { console.log((cond ? 'PASS ' : 'FAIL ') + nam
   check('GTM script already on the page: not loaded again', gtmTags(w) === 1 && gtmEvents(w) === 0);
 
   w = page('builtin', [consentCookie(true)], { gtm: 'GTM-TEST1', gtmExternal: true }); await wait(300);
-  check('external loader: never injects GTM, even with consent', gtmTags(w) === 0 && gtmEvents(w) === 0);
+  check('external loader: never injects GTM, even with consent', gtmTags(w) === 0);
+  check('external loader: sends the gtm.js event once (page view triggers)', gtmEvents(w) === 1);
   check('external loader: stored consent sent as update', w.dataLayer.some(x => x && x[0] === 'consent' && x[1] === 'update' && x[2].ad_storage === 'granted'));
   w.NexConsent.save({ analytics: false, marketing: false }); await wait(50);
   check('external loader: withdrawal reloads to stop running tags', w.__reloaded === true);
+
+  w = page('builtin', [], { gtm: 'GTM-TEST1', gtmExternal: true, body: `<script>dataLayer.push({'gtm.start':1,event:'gtm.js'});</script>` }); await wait(300);
+  check('external loader: no second gtm.js event when another snippet sent one', gtmEvents(w) === 1);
+  w = page('builtin', [], { gtm: 'GTM-TEST1', gtmExternal: true }); await wait(300);
+  check('external loader: gtm.js event also before consent (tags wait via Consent Mode)', gtmEvents(w) === 1 && gtmTags(w) === 0);
   console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');
   process.exit(fails ? 1 : 0);
 })();
